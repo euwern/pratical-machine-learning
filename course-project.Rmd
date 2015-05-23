@@ -5,18 +5,73 @@ date: "Saturday, May 23, 2015"
 output: html_document
 ---
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+In this course project our goal is to predict "classe" variable of the given test data by learning the training data. 
+The "classe" variable consists of 5 values (A to E) and it use to classify how the participant do the dumbbell biceps curl. You can read more about the experiment in http://groupware.les.inf.puc-rio.br/har#weight_lifting_exercises
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Random Forest Machine learning algorithm is used to predict the "classe" variable. 
+
+Preparing the data
+-------------------
+
+```{r,warning=FALSE}
+library(caret)
+train_dat <- read.csv(file="pml-training.csv")
+
+inTrain <- createDataPartition(y=train_dat$classe, p=0.7, list=F)
+
+training <- train_dat[inTrain,]
+testing  <- train_dat[-inTrain,]
+```
+
+Data Pre-processing and Co-variate creation
+---------------------------------------------
+The raw data consists of 160 variables but not all variables are useful in making the prediction. If you observe the training data, you can see a lot of NA values. We also want to remove variable with near zero variability which contributes very little to the prediction. Apart from that, for the same reason I also remove username variable and timestamp variable from the training data. 
+
 
 ```{r}
-summary(cars)
+##removing columns with near zero variablity variable
+selCol <- nearZeroVar(training, saveMetrics=T)
+selCol <- selCol[selCol$nzv==F,] 
+selCol_training <- training[,row.names(selCol)]
+
+##removing column with NA value greater than 95%
+selCol_training <- selCol_training[, colMeans(is.na(selCol_training)) <= 0.95] 
+
+##removing username and timestamp column
+selCol_training <- selCol_training[,c(-1,-2,-3,-4,-5)]
 ```
 
-You can also embed plots, for example:
-
-```{r, echo=FALSE}
-plot(cars)
+In the end, I managed to reduce the variables from 160 to 54 variables.
+```{r}
+names(selCol_training)
+length(names(selCol_training))
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Training the data
+------------------
+Fitiing the filtered training data to the Caret Random forest model. 
+```{r}
+##NOTE: it takes approximately 3 hours to train the data using the random forest algorithm
+ptm <- proc.time()
+modFit <- train(classe~., data=selCol_training, method="rf", importance=T)
+ptm <- proc.time()
+ptm ## elapsed time is in seconds.
+```
+
+Prediction Result using the test data
+--------------------------------------
+The model managed to reach an accuracy of 99.75% when predicting the testing data. 
+
+```{r}
+accuracy <- confusionMatrix(testing$classe, predict(modFit, testing))
+accuracy
+```
+
+Final Prediction using the provided test data
+----------------------------------------------
+
+```{r}
+final_test_dat <- read.csv(file="pml-testing.csv")
+answer = predict(modFit, final_test_dat)
+answer
+```
