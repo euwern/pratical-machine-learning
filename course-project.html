@@ -70,7 +70,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 inTrain &lt;- createDataPartition(y=train_dat$classe, p=0.7, list=F)
 
 training &lt;- train_dat[inTrain,]
-testing  &lt;- train_dat[-inTrain,]</code></pre>
+crossVal &lt;- train_dat[-inTrain,]</code></pre>
 </div>
 <div id="data-pre-processing-and-co-variate-creation" class="section level2">
 <h2>Data Pre-processing and Co-variate creation</h2>
@@ -120,45 +120,47 @@ modFit &lt;- train(classe~., data=selCol_training, method=&quot;rf&quot;, import
 ## Type rfNews() to see new features/changes/bug fixes.</code></pre>
 <pre class="r"><code>ptm &lt;- proc.time()
 ptm ## elapsed time is in seconds.</code></pre>
-<pre><code>##    user  system elapsed 
-## 9670.29   30.78 9704.31</code></pre>
+<pre><code>##     user   system  elapsed 
+## 10900.29    38.32 10949.48</code></pre>
 </div>
-<div id="prediction-result-using-the-test-data" class="section level2">
-<h2>Prediction Result using the test data</h2>
-<p>The model managed to reach an accuracy of 99.75% when predicting the testing data.</p>
-<pre class="r"><code>accuracy &lt;- confusionMatrix(testing$classe, predict(modFit, testing))
+<div id="out-of-sample-error-estimation-using-the-cross-validation-data" class="section level2">
+<h2>Out of sample error estimation using the cross validation data</h2>
+<p>I am going to predict the outcome of the “classe” variable of the cross validation data. By doing so, I can figure out the accuracy of my machine learning model.</p>
+<p>From the lecture notes, out of sample error is defined as the error rate you get on a new data set. Sometimes called generalization error. The new data set would be the cross validation dataset which is 30% of the untrained data. In short, the opposite of accuracy is out of sample error rate.</p>
+<pre class="r"><code>accuracy &lt;- confusionMatrix(crossVal$classe, predict(modFit, crossVal))
 accuracy</code></pre>
 <pre><code>## Confusion Matrix and Statistics
 ## 
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 1674    0    0    0    0
-##          B    3 1134    2    0    0
-##          C    0    2 1024    0    0
+##          A 1672    1    0    0    1
+##          B    0 1138    1    0    0
+##          C    0    3 1023    0    0
 ##          D    0    0    3  961    0
-##          E    0    0    0    3 1079
+##          E    0    0    0    0 1082
 ## 
 ## Overall Statistics
 ##                                           
-##                Accuracy : 0.9978          
-##                  95% CI : (0.9962, 0.9988)
-##     No Information Rate : 0.285           
+##                Accuracy : 0.9985          
+##                  95% CI : (0.9971, 0.9993)
+##     No Information Rate : 0.2841          
 ##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
 ##                                           
-##                   Kappa : 0.9972          
+##                   Kappa : 0.9981          
 ##  Mcnemar's Test P-Value : NA              
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9982   0.9982   0.9951   0.9969   1.0000
-## Specificity            1.0000   0.9989   0.9996   0.9994   0.9994
-## Pos Pred Value         1.0000   0.9956   0.9981   0.9969   0.9972
-## Neg Pred Value         0.9993   0.9996   0.9990   0.9994   1.0000
-## Prevalence             0.2850   0.1930   0.1749   0.1638   0.1833
-## Detection Rate         0.2845   0.1927   0.1740   0.1633   0.1833
+## Sensitivity            1.0000   0.9965   0.9961   1.0000   0.9991
+## Specificity            0.9995   0.9998   0.9994   0.9994   1.0000
+## Pos Pred Value         0.9988   0.9991   0.9971   0.9969   1.0000
+## Neg Pred Value         1.0000   0.9992   0.9992   1.0000   0.9998
+## Prevalence             0.2841   0.1941   0.1745   0.1633   0.1840
+## Detection Rate         0.2841   0.1934   0.1738   0.1633   0.1839
 ## Detection Prevalence   0.2845   0.1935   0.1743   0.1638   0.1839
-## Balanced Accuracy      0.9991   0.9986   0.9974   0.9981   0.9997</code></pre>
+## Balanced Accuracy      0.9998   0.9981   0.9977   0.9997   0.9995</code></pre>
+<p>The model managed to reach an accuracy of 0.9984707 when predicting the cross validation data. In other words the out of sample error rate is 0.0015293.</p>
 </div>
 <div id="final-prediction-using-the-provided-test-data" class="section level2">
 <h2>Final Prediction using the provided test data</h2>

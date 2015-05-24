@@ -5,7 +5,7 @@ train_dat <- read.csv(file="pml-training.csv")
 inTrain <- createDataPartition(y=train_dat$classe, p=0.7, list=F)
 
 training <- train_dat[inTrain,]
-testing  <- train_dat[-inTrain,]
+crossVal <- train_dat[-inTrain,]
 
 ##removing columns with near zero variablity variable
 selCol <- nearZeroVar(training, saveMetrics=T)
@@ -24,7 +24,7 @@ ptm <- proc.time()
 ptm
 
 
-accuracy <- confusionMatrix(testing$classe, predict(modFit, testing))
+accuracy <- confusionMatrix(crossval$classe, predict(modFit, crossval))
 accuracy
 
 final_test_dat <- read.csv(file="pml-testing.csv")

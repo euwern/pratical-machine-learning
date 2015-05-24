@@ -20,7 +20,7 @@ train_dat <- read.csv(file="pml-training.csv")
 inTrain <- createDataPartition(y=train_dat$classe, p=0.7, list=F)
 
 training <- train_dat[inTrain,]
-testing  <- train_dat[-inTrain,]
+crossVal <- train_dat[-inTrain,]
 ```
 
 Data Pre-processing and Co-variate creation
@@ -58,14 +58,20 @@ ptm <- proc.time()
 ptm ## elapsed time is in seconds.
 ```
 
-Prediction Result using the test data
---------------------------------------
-The model managed to reach an accuracy of 99.75% when predicting the testing data. 
+Out of sample error estimation  using the cross validation data
+---------------------------------------------------------------
+
+I am going to predict the outcome of the "classe" variable of the cross validation data. By doing so, I can figure out the accuracy of my machine learning model. 
+
+From the lecture notes, out of sample error is defined as the error rate you get on a new data set. Sometimes called generalization error. The new data set would be the cross validation dataset which is 30% of the untrained data.
+In short, the opposite of accuracy is out of sample error rate.
 
 ```{r}
-accuracy <- confusionMatrix(testing$classe, predict(modFit, testing))
+accuracy <- confusionMatrix(crossVal$classe, predict(modFit, crossVal))
 accuracy
 ```
+
+The model managed to reach an accuracy of `r accuracy$overall['Accuracy']` when predicting the cross validation data. In other words the out of sample error rate is `r 1 - accuracy$overall['Accuracy']`.
 
 Final Prediction using the provided test data
 ----------------------------------------------
