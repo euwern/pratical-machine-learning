@@ -24,7 +24,7 @@ ptm <- proc.time()
 ptm
 
 
-accuracy <- confusionMatrix(crossval$classe, predict(modFit, crossval))
+accuracy <- confusionMatrix(crossVal$classe, predict(modFit, crossVal))
 accuracy
 
 final_test_dat <- read.csv(file="pml-testing.csv")
